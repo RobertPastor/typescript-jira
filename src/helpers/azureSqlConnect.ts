@@ -1,6 +1,6 @@
 
 
-import tedious from 'tedious';
+import { Connection, ConnectionConfig, DebugOptions } from 'tedious';
 //const Connection = require('tedious').Connection;
 import { log } from './log.js'
 
@@ -29,26 +29,26 @@ export function executeStatement(connection: any) {
     })
 }
 
-export function connect(configurationData: any): Promise<any> {
+export function connect(configurationData: any): Promise<Connection> {
 
     log(JSON.stringify(configurationData))
-    const config: any = {
+    let debug: DebugOptions = {
+        packet: true,
+        data: true,
+        payload: true,
+        token: true
+    }
+
+    const config: ConnectionConfig = {
         server: configurationData.server, // or "localhost"
-        userName: configurationData.user,
-        password: configurationData.password,
+
         options: {
             requestTimeout: 60000,
             encrypt: true,
             database: configurationData.database,
             port: configurationData.port,
             rowCollectionOnRequestCompletion: true,
-            debug: {
-                packet: true,
-                data: true,
-                payload: true,
-                token: true,
-                log: true
-            }
+            debug: debug
         },
 
         authentication: {
@@ -58,25 +58,15 @@ export function connect(configurationData: any): Promise<any> {
                 password: configurationData.password,
             }
         }
-    };
-
-    /*
-    config.options.debug = {
-        packet: true,
-        data: true,
-        payload: true,
-        token: true,
-        log: true
     }
-    */
 
     return new Promise(function (resolve, reject) {
 
-        let connection = new tedious.Connection(config);
+        const connection: Connection = new Connection(config);
 
         // Setup event handler when the connection is established. 
-        connection.on('connect', function (err: any) {
-            log("connect")
+        connection.on('connect', function (err: Error) {
+            log("-----> connect")
             if (err) {
                 log('Error: ' + JSON.stringify(err))
                 reject(err)
@@ -87,7 +77,7 @@ export function connect(configurationData: any): Promise<any> {
             }
         });
 
-        connection.on('error', function (err: any) {
+        connection.on('error', function (err: Error) {
             log("=========> error ")
             log(JSON.stringify(err))
             reject(err)
@@ -100,6 +90,9 @@ export function connect(configurationData: any): Promise<any> {
         connection.on('debug', function (text: string) {
             log(text)
         });
+        connection.on('end', function () {
+            log("end")
+        })
         // Initialize the connection.
         connection.connect();
     })
