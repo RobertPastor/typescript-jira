@@ -15,18 +15,21 @@ export interface HistoryItemsArray extends Array<HistoryItem> { }
 
 
 //{"field":"labels","fieldtype":"jira","from":null,"fromString":null,"to":null,"toString":"V5.0"}
-function readItem(historyItem: HistoryItem): void {
+function readHistoryItem(historyItem: HistoryItem): void {
 
-    log(historyItem.field)
+    log("field = " + historyItem.field)
+    log("from = " + historyItem.fromString)
+    log("to = " + historyItem.toString)
+
 }
 
-export function readItems(items: HistoryItemsArray): void {
-    log("--------- read items ------------")
+export function readHistoryItems(items: HistoryItemsArray): void {
+    log("--------- read Jira History items ------------")
     if (Array.isArray(items)) {
         items.forEach(item => {
-            log("-------- item ----------")
+            log("-------- Jira History item ----------")
             log(JSON.stringify(item))
-            readItem(item)
+            readHistoryItem(item)
         })
     }
 }

@@ -1,74 +1,35 @@
 import fs from 'fs'
 import { log } from './helpers/log'
-import { readItems } from './helpers/jiraHistoryItems'
 
-const filePath = "./inputs/jira-json-lines-12-May-2021-16h06-01-TZplus-02-00.jsonl"
+import { readJiraFields } from './helpers/jiraFields'
+import { readJiraChangeLog } from './helpers/jiraHistory'
+import { connect } from './helpers/azureSqlConnect'
 
+const inputFilePath = "./inputs/jira-json-lines-12-May-2021-16h06-01-TZplus-02-00.jsonl"
+const azureSqlConfigurationDataPath = "./AzureSqlConfigurationData.json"
 
-
-function readHistory(history: any): void {
-
-    log("--- read history  --- ")
-    for (const key in history) {
-        log(key + " - " + JSON.stringify(history[key]))
-        if (key == "items") {
-            readItems(history[key])
-        }
-    }
-}
-
-function readHistories(histories: any): void {
-
-    log("====== read histories =============")
-    if (Array.isArray(histories)) {
-        histories.forEach(history => {
-            log(JSON.stringify(history))
-            readHistory(history)
-        })
-    }
-}
-
-function readChangeLog(changelog: any): void {
-
-    log("----------- read change log ---------------")
-    //log(JSON.stringify(changelog))
-    for (const key in changelog) {
-        log("==========history===")
-        log(key + " - " + JSON.stringify(changelog[key]))
-        if (key == "histories") {
-            readHistories(changelog.histories)
-        }
-    }
-}
 
 function readJiraObjArray(jiraJsonData: any): void {
 
     if (Array.isArray(jiraJsonData)) {
         log("it is an array containing " + jiraJsonData.length + " elements ")
         jiraJsonData.forEach(jiraObj => {
-            log("=============")
+            log("======jira obj key value =======")
             for (const key in jiraObj) {
-                log(`${key}: ${jiraObj[key]}`)
+                //log("key = " + key + " - " + JSON.stringify(jiraObj[key]))
             }
 
             //log(JSON.stringify(jiraObj))
             if (jiraObj.hasOwnProperty("key")) {
                 log("=======key========")
                 log(JSON.stringify(jiraObj.key))
-
                 //log(JSON.stringify(jiraObj)) 
             }
             if (jiraObj.hasOwnProperty("fields")) {
-                log("=======fields========")
-                //log(JSON.stringify(jiraObj.fields))
-                log(JSON.stringify(jiraObj.fields.issuetype.name))
-
-                for (const key in jiraObj.fields.issuetype) {
-                    log(`${key}: ${jiraObj.fields.issuetype[key]}`)
-                }
+                readJiraFields(jiraObj.fields)
             }
             if (jiraObj.hasOwnProperty("changelog")) {
-                readChangeLog(jiraObj.changelog)
+                //readJiraChangeLog(jiraObj.changelog)
             }
         })
     }
@@ -76,16 +37,36 @@ function readJiraObjArray(jiraJsonData: any): void {
 
 function startScript(): void {
 
-    log("starting")
-    fs.readFile(filePath, function (err, jiraJsonDataBuffer) {
+    log("-----------start script -----------")
+    fs.readFile(inputFilePath, function (err, jiraJsonDataBuffer) {
 
         if (err) {
             log(JSON.stringify(err))
         } else {
-            let jiraJsonData = JSON.parse(jiraJsonDataBuffer.toString());
-            //log(JSON.stringify(jiraJsonData))
-            readJiraObjArray(jiraJsonData)
-            log("------- end script -------------")
+            fs.readFile(azureSqlConfigurationDataPath, function (err, azureSqlConfigDataBuffer) {
+
+                if (err) {
+                    log(JSON.stringify(err))
+                } else {
+                    log(" Azure configuration data read ")
+                    let azureSqlConfigData: any = JSON.parse(azureSqlConfigDataBuffer.toString())
+                    connect(azureSqlConfigData)
+                        .then(connection => {
+
+                            log("======== Azure SQL connected =========")
+                            let jiraJsonData = JSON.parse(jiraJsonDataBuffer.toString())
+                            //log(JSON.stringify(jiraJsonData))
+                            readJiraObjArray(jiraJsonData)
+
+                            connection.close();
+                            log("------- end script -------------")
+                        })
+                        .catch(err => {
+                            log("======= error ========")
+                            log(JSON.stringify(err))
+                        })
+                }
+            })
         }
     })
 }
