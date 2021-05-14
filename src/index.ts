@@ -1,17 +1,10 @@
 import fs from 'fs'
 import { log } from './helpers/log'
+import { readItems } from './helpers/jiraHistoryItems'
 
 const filePath = "./inputs/jira-json-lines-12-May-2021-16h06-01-TZplus-02-00.jsonl"
 
-function readItems(items: any): void {
-    log("--------- read items ------------")
-    if (Array.isArray(items)) {
-        items.forEach(item => {
-            log("-------- item ----------")
-            log(JSON.stringify(item))
-        })
-    }
-}
+
 
 function readHistory(history: any): void {
 
