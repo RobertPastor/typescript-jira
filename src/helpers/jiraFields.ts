@@ -1,7 +1,7 @@
 import { Connection, Request, TYPES } from 'tedious'
 import { log } from './log'
 
-export function readJiraFields(jiraFields: any, connection: Connection): Promise<Boolean> {
+export function insertJiraFields(jiraFields: any, connection: Connection): Promise<Boolean> {
 
     log("======= Jira fields ========")
     //log(JSON.stringify(jiraObj.fields))
