@@ -11,7 +11,7 @@ export function executeStatement(connection: any) {
 
         let statement = "SELECT * FROM INFORMATION_SCHEMA.TABLES"
         log("execute Statement")
-        let request = new tedious.Request(statement, function (err: any, rowCount: number, rows: any) {
+        let request = new Request(statement, function (err: any, rowCount: number, rows: any) {
 
             if (err) {
                 log(err)
