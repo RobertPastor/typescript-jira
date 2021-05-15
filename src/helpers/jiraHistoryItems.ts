@@ -28,7 +28,7 @@ export function readHistoryItems(items: HistoryItemsArray): void {
     if (Array.isArray(items)) {
         items.forEach(item => {
             log("-------- Jira History item ----------")
-            log(JSON.stringify(item))
+            //log(JSON.stringify(item))
             readHistoryItem(item)
         })
     }

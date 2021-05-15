@@ -3,7 +3,7 @@ import { log } from './helpers/log'
 import { Connection } from 'tedious'
 
 import { insertJiraFields } from './helpers/jiraFields'
-import { readJiraChangeLog } from './helpers/jiraHistory'
+import { insertJiraChangeLog } from './helpers/jiraHistory'
 import { connect } from './helpers/azureSqlConnect'
 
 
@@ -28,17 +28,27 @@ function insertJiraObj(jiraObj: any, connection: Connection): Promise<boolean> {
         if (jiraObj.hasOwnProperty("fields")) {
             insertJiraFields(jiraObj, jiraObj.fields, connection)
                 .then(_ => {
-                    log("insert OK")
-                    resolve(true)
+                    log("insert jira fields OK")
+                    if (jiraObj.hasOwnProperty("changelog")) {
+                        insertJiraChangeLog(jiraObj, connection)
+                            .then(_ => {
+                                log("insert Jira ChangeLog OK")
+                                resolve(true)
+                            })
+                            .catch((err: any) => {
+                                log(JSON.stringify(err))
+                                reject(err)
+                            })
+                    } else {
+                        resolve(true)
+                    }
                 })
-                .catch(err => {
+                .catch((err: any) => {
                     log(JSON.stringify(err))
                     reject(err)
                 })
         }
-        if (jiraObj.hasOwnProperty("changelog")) {
-            //readJiraChangeLog(jiraObj.changelog)
-        }
+
     })
 }
 
