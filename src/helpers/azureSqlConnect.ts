@@ -5,6 +5,7 @@ import { Connection, ConnectionConfig, DebugOptions } from 'tedious';
 import { log } from './log.js'
 
 
+/*
 export function executeStatement(connection: any) {
 
     return new Promise(function (resolve, reject) {
@@ -28,15 +29,17 @@ export function executeStatement(connection: any) {
 
     })
 }
+*/
 
 export function connect(configurationData: any): Promise<Connection> {
 
     log(JSON.stringify(configurationData))
+
     let debug: DebugOptions = {
-        packet: true,
-        data: true,
-        payload: true,
-        token: true
+        packet: false,
+        data: false,
+        payload: false,
+        token: false
     }
 
     const config: ConnectionConfig = {
@@ -50,7 +53,6 @@ export function connect(configurationData: any): Promise<Connection> {
             rowCollectionOnRequestCompletion: true,
             debug: debug
         },
-
         authentication: {
             type: "default",
             options: {

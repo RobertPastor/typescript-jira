@@ -26,7 +26,7 @@ function insertJiraObj(jiraObj: any, connection: Connection): Promise<boolean> {
             //log(JSON.stringify(jiraObj)) 
         }
         if (jiraObj.hasOwnProperty("fields")) {
-            return insertJiraFields(jiraObj.fields, connection)
+            insertJiraFields(jiraObj, jiraObj.fields, connection)
                 .then(_ => {
                     log("insert OK")
                     resolve(true)
@@ -39,9 +39,7 @@ function insertJiraObj(jiraObj: any, connection: Connection): Promise<boolean> {
         if (jiraObj.hasOwnProperty("changelog")) {
             //readJiraChangeLog(jiraObj.changelog)
         }
-
     })
-
 }
 
 
@@ -65,6 +63,7 @@ function insertJiraObjArray(jiraJsonData: any, connection: Connection): Promise<
                             jiraObj = jiraJsonData[index]
                             next(jiraObj)
                         } else {
+                            log("all insertions done")
                             resolve(true)
                         }
                     })
@@ -84,7 +83,7 @@ function insertJiraObjArray(jiraJsonData: any, connection: Connection): Promise<
 
 function startScript(): void {
 
-    log("-----------start script -----------")
+    log("----------- start script -----------")
     fs.readFile(inputFilePath, function (err, jiraJsonDataBuffer) {
 
         if (err) {
@@ -95,7 +94,7 @@ function startScript(): void {
                 if (err) {
                     log(JSON.stringify(err))
                 } else {
-                    log(" Azure configuration data read ")
+                    log("--- Azure configuration data read ---")
                     let azureSqlConfigData: any = JSON.parse(azureSqlConfigDataBuffer.toString())
                     connect(azureSqlConfigData)
                         .then(connection => {
