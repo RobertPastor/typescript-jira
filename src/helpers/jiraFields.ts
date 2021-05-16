@@ -32,30 +32,43 @@ export function insertJiraFields(jiraObj: any, jiraFields: any, connection: Conn
 
     return new Promise(function (resolve, reject) {
 
-        let sql: string = "INSERT INTO [dbo].DEMO_ECR_PCR_MAIN (CR, PROJECT, ISSUETYPE, CREATIONDATE, PRIORITY, SECURITY) "
-        sql += " VALUES (@CR, @PROJECT, @ISSUETYPE, @CREATIONDATE, @PRIORITY, @SECURITY)"
-        let request = new Request(sql, function (err: any, rowCount: number) {
+        let tableName: string = "[dbo].DEMO_ECR_PCR_MAIN "
+        let sql: string = " DELETE FROM " + tableName + " WHERE CR = '" + jiraObj.key + "'"
+        log(sql)
+        let requestDelete: Request = new Request(sql, function (err: Error, rowCount: number) {
             if (err) {
                 log(JSON.stringify(err))
                 reject(err)
             } else {
-                log('Insert complete.');
-                resolve(true)
+                log("row count = " + new String(rowCount))
+
+                sql = "INSERT INTO [dbo].DEMO_ECR_PCR_MAIN (CR, PROJECT, ISSUETYPE, CREATIONDATE, PRIORITY, SECURITY) "
+                sql += " VALUES (@CR, @PROJECT, @ISSUETYPE, @CREATIONDATE, @PRIORITY, @SECURITY)"
+                let request: Request = new Request(sql, function (err: Error, rowCount: number) {
+                    if (err) {
+                        log(JSON.stringify(err))
+                        reject(err)
+                    } else {
+                        log('Insert Jira Fields complete for -> ' + jiraObj.key);
+                        resolve(true)
+                    }
+                })
+
+                request.addParameter("CR", TYPES.NVarChar, jiraObj.key);
+                request.addParameter("PROJECT", TYPES.NVarChar, jiraFields.project.name);
+                request.addParameter("ISSUETYPE", TYPES.NVarChar, jiraFields.issuetype.name);
+                request.addParameter("CREATIONDATE", TYPES.NVarChar, jiraFields.created)
+                request.addParameter("PRIORITY", TYPES.NVarChar, jiraFields.priority.name)
+                request.addParameter("SECURITY", TYPES.NVarChar, jiraFields.security.name)
+
+                request.on('row', function (columns) {
+                    columns.forEach(function (column) {
+                        console.log(column.value);
+                    });
+                })
+                connection.execSql(request);
             }
         })
-
-        request.addParameter("CR", TYPES.NVarChar, jiraObj.key);
-        request.addParameter("PROJECT", TYPES.NVarChar, jiraFields.project.name);
-        request.addParameter("ISSUETYPE", TYPES.NVarChar, jiraFields.issuetype.name);
-        request.addParameter("CREATIONDATE", TYPES.NVarChar, jiraFields.created)
-        request.addParameter("PRIORITY", TYPES.NVarChar, jiraFields.priority.name)
-        request.addParameter("SECURITY", TYPES.NVarChar, jiraFields.security.name)
-
-        request.on('row', function (columns) {
-            columns.forEach(function (column) {
-                console.log(column.value);
-            });
-        })
-        connection.execSql(request);
+        connection.execSql(requestDelete)
     })
 }

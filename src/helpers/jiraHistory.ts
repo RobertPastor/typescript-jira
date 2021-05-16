@@ -11,7 +11,7 @@ export interface JiraHistory {
     items: HistoryItemsArray
 }
 
-function readHistory(history: JiraHistory): historyItemsArray {
+function readHistory(history: JiraHistory): HistoryItemsArray {
 
     let historyItemsArray: HistoryItemsArray = []
     log("--- read Jira history  --- ")

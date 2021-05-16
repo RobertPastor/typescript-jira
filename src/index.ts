@@ -48,7 +48,6 @@ function insertJiraObj(jiraObj: any, connection: Connection): Promise<boolean> {
                     reject(err)
                 })
         }
-
     })
 }
 
@@ -67,7 +66,7 @@ function insertJiraObjArray(jiraJsonData: any, connection: Connection): Promise<
 
                 insertJiraObj(jiraObj, connection)
                     .then(_ => {
-                        log("one insertion done")
+                        log("one Jira Obj insertion done")
                         index = index + 1
                         if (index < jiraJsonData.length) {
                             jiraObj = jiraJsonData[index]
