@@ -6,50 +6,14 @@ import { insertJiraFields } from './helpers/jiraFields'
 import { insertJiraChangeLog } from './helpers/jiraHistory'
 import { connect } from './helpers/azureSqlConnect'
 
+import { readBigJson } from './helpers/readBigJson'
+import { insertJiraObj } from './helpers/jiraObjInsert'
 
-const inputFilePath = "./inputs/jira-json-lines-12-May-2021-16h06-01-TZplus-02-00.jsonl"
-const azureSqlConfigurationDataPath = "./AzureSqlConfigurationData.json"
 
-function insertJiraObj(jiraObj: any, connection: Connection): Promise<boolean> {
+let inputFilePath: string = "./inputs/jira-json-lines-12-May-2021-16h06-01-TZplus-02-00.jsonl"
+inputFilePath = "./inputs/jira-json-lines-25-March-2021-14h19-45-TZplus-01-00.jsonl"
+const azureSqlConfigurationDataPath: string = "./AzureSqlConfigurationData.json"
 
-    return new Promise(function (resolve, reject) {
-
-        log("======jira obj key value =======")
-        for (const key in jiraObj) {
-            //log("key = " + key + " - " + JSON.stringify(jiraObj[key]))
-        }
-
-        //log(JSON.stringify(jiraObj))
-        if (jiraObj.hasOwnProperty("key")) {
-            log("=======key========")
-            log(JSON.stringify(jiraObj.key))
-            //log(JSON.stringify(jiraObj)) 
-        }
-        if (jiraObj.hasOwnProperty("fields")) {
-            insertJiraFields(jiraObj, jiraObj.fields, connection)
-                .then(_ => {
-                    log("insert jira fields OK")
-                    if (jiraObj.hasOwnProperty("changelog")) {
-                        insertJiraChangeLog(jiraObj, connection)
-                            .then(_ => {
-                                log("insert Jira ChangeLog OK")
-                                resolve(true)
-                            })
-                            .catch((err: any) => {
-                                log(JSON.stringify(err))
-                                reject(err)
-                            })
-                    } else {
-                        resolve(true)
-                    }
-                })
-                .catch((err: any) => {
-                    log(JSON.stringify(err))
-                    reject(err)
-                })
-        }
-    })
-}
 
 
 function insertJiraObjArray(jiraJsonData: any, connection: Connection): Promise<boolean> {
@@ -87,10 +51,9 @@ function insertJiraObjArray(jiraJsonData: any, connection: Connection): Promise<
             reject(false)
         }
     })
-
 }
 
-function startScript(): void {
+function startScriptOld(): void {
 
     log("----------- start script -----------")
     fs.readFile(inputFilePath, function (err, jiraJsonDataBuffer) {
@@ -130,4 +93,38 @@ function startScript(): void {
         }
     })
 }
+
+function startScript() {
+
+    fs.readFile(azureSqlConfigurationDataPath, function (err, azureSqlConfigDataBuffer) {
+
+        if (err) {
+            log(JSON.stringify(err))
+        } else {
+            log("--- Azure configuration data read ---")
+            let azureSqlConfigData: any = JSON.parse(azureSqlConfigDataBuffer.toString())
+            connect(azureSqlConfigData)
+                .then(connection => {
+
+                    log("======== Azure SQL connected =========")
+                    readBigJson(inputFilePath, connection)
+                        .then(_ => {
+
+                            connection.close();
+                            log("------- end script -------------")
+                        })
+                        .catch(err => {
+                            log("======= error ========")
+                            log(JSON.stringify(err))
+                        })
+
+                })
+                .catch(err => {
+                    log("======= error ========")
+                    log(JSON.stringify(err))
+                })
+        }
+    })
+}
 startScript()
+//readBigJson(inputFilePath)

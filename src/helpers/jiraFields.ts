@@ -42,7 +42,8 @@ export function insertJiraFields(jiraObj: any, jiraFields: any, connection: Conn
             } else {
                 log("row count = " + new String(rowCount))
 
-                sql = "INSERT INTO [dbo].DEMO_ECR_PCR_MAIN (CR, PROJECT, ISSUETYPE, CREATIONDATE, PRIORITY, SECURITY) "
+                sql = "INSERT INTO "
+                sql += tableName + "  (CR, PROJECT, ISSUETYPE, CREATIONDATE, PRIORITY, SECURITY) "
                 sql += " VALUES (@CR, @PROJECT, @ISSUETYPE, @CREATIONDATE, @PRIORITY, @SECURITY)"
                 let request: Request = new Request(sql, function (err: Error, rowCount: number) {
                     if (err) {
