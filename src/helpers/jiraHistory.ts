@@ -47,8 +47,8 @@ function insertHistoryItem(jiraObj: any, historyItem: HistoryItem, connection: C
         let tableName: string = " [dbo].DEMO_ECR_PCR_HISTORY "
 
         let sql: string = "INSERT INTO " + tableName
-        sql += "  (CR, HISTORY_CREATED , ITEMS_FIELD, ITEMS_FROMSTRING, ITEMS_TOSTRING) "
-        sql += " VALUES (@CR, @HISTORY_CREATED, @ITEMS_FIELD, @ITEMS_FROMSTRING, @ITEMS_TOSTRING)"
+        sql += "  (CR, HISTORY_CREATED_DATE , ITEMS_FIELD, ITEMS_FROMSTRING, ITEMS_TOSTRING, UPDATE_DATE) "
+        sql += " VALUES (@CR, @HISTORY_CREATED_DATE, @ITEMS_FIELD, @ITEMS_FROMSTRING, @ITEMS_TOSTRING, @UPDATE_DATE)"
         let request = new Request(sql, function (err: any, rowCount: number) {
             if (err) {
                 log(JSON.stringify(err))
@@ -60,10 +60,21 @@ function insertHistoryItem(jiraObj: any, historyItem: HistoryItem, connection: C
 
         })
         request.addParameter("CR", TYPES.NVarChar, jiraObj.key);
-        request.addParameter("HISTORY_CREATED", TYPES.NVarChar, historyItem.created);
+        let date = new Date(historyItem.created)
+        request.addParameter("HISTORY_CREATED_DATE", TYPES.DateTimeOffset, date);
         request.addParameter("ITEMS_FIELD", TYPES.NVarChar, historyItem.field);
-        request.addParameter("ITEMS_FROMSTRING", TYPES.NVarChar, historyItem.fromString)
-        request.addParameter("ITEMS_TOSTRING", TYPES.NVarChar, historyItem.toString)
+        if (historyItem.fromString) {
+            request.addParameter("ITEMS_FROMSTRING", TYPES.NVarChar, historyItem.fromString.substring(0, 500))
+        } else {
+            request.addParameter("ITEMS_FROMSTRING", TYPES.NVarChar, historyItem.fromString)
+        }
+        if (historyItem.toString) {
+            request.addParameter("ITEMS_TOSTRING", TYPES.NVarChar, historyItem.toString.substring(0, 500))
+        } else {
+            request.addParameter("ITEMS_TOSTRING", TYPES.NVarChar, historyItem.toString)
+        }
+        date = new Date()
+        request.addParameter("UPDATE_DATE", TYPES.DateTimeOffset, date)
 
         request.on('row', function (columns) {
             columns.forEach(function (column) {
@@ -88,7 +99,7 @@ export function insertJiraChangeLog(jiraObj: any, connection: Connection): Promi
                 historyItemsArray = historyItemsArray.concat(insertHistories(jiraObj.changelog.histories))
             }
         }
-        log(JSON.stringify(historyItemsArray.length))
+        log("history items array length = " + JSON.stringify(historyItemsArray.length))
         let tableName: string = " [dbo].DEMO_ECR_PCR_HISTORY "
 
         let sql: string = " DELETE FROM " + tableName + " WHERE CR = '" + jiraObj.key + "'"
@@ -98,7 +109,7 @@ export function insertJiraChangeLog(jiraObj: any, connection: Connection): Promi
                 log(JSON.stringify(err))
                 reject(err)
             } else {
-                log("row count = " + new String(rowCount))
+                log("delete row count => " + new String(rowCount))
 
                 if (historyItemsArray.length > 0) {
 

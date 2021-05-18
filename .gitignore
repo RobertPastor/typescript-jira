@@ -78,5 +78,5 @@ node_modules/
 .next
 
 # json and jsonl files
-*.json
-*.jsonl
+inputs/*.json
+inputs/*.jsonl

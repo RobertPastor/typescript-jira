@@ -36,13 +36,15 @@ export function insertJiraObj(jiraObj: any, connection: Connection): Promise<boo
                             })
                     } else {
                         log("jira obj is missing changelog property !!!")
-                        resolve(false)
+                        resolve(true)
                     }
                 })
                 .catch((err: any) => {
                     log(JSON.stringify(err))
                     reject(err)
                 })
+        } else {
+            resolve(true)
         }
     })
 }

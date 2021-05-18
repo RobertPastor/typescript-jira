@@ -10,12 +10,6 @@ import { readBigJson } from './helpers/readBigJson'
 import { insertJiraObj } from './helpers/jiraObjInsert'
 
 
-let inputFilePath: string = "./inputs/jira-json-lines-12-May-2021-16h06-01-TZplus-02-00.jsonl"
-inputFilePath = "./inputs/jira-json-lines-25-March-2021-14h19-45-TZplus-01-00.jsonl"
-const azureSqlConfigurationDataPath: string = "./AzureSqlConfigurationData.json"
-
-
-
 function insertJiraObjArray(jiraJsonData: any, connection: Connection): Promise<boolean> {
 
     return new Promise(function (resolve, reject) {
@@ -54,6 +48,11 @@ function insertJiraObjArray(jiraJsonData: any, connection: Connection): Promise<
 }
 
 function startScriptOld(): void {
+
+    let inputFilePath: string = "../inputs/jira-json-lines-12-May-2021-16h06-01-TZplus-02-00.jsonl"
+    inputFilePath = "../inputs/jira-json-lines-25-March-2021-14h19-45-TZplus-01-00.jsonl"
+    inputFilePath = "../inputs/jira-json-lines-18-May-2021-21h17-27-TZplus-02-00.jsonl"
+    const azureSqlConfigurationDataPath: string = "../inputs/AzureSqlConfigurationData.json"
 
     log("----------- start script -----------")
     fs.readFile(inputFilePath, function (err, jiraJsonDataBuffer) {
@@ -95,6 +94,12 @@ function startScriptOld(): void {
 }
 
 function startScript() {
+
+    let inputFilePath: string = "./inputs/jira-json-lines-12-May-2021-16h06-01-TZplus-02-00.jsonl"
+    inputFilePath = "./inputs/jira-json-lines-25-March-2021-14h19-45-TZplus-01-00.jsonl"
+    inputFilePath = "./inputs/jira-json-lines-18-May-2021-21h17-27-TZplus-02-00.jsonl"
+    const azureSqlConfigurationDataPath: string = "./inputs/AzureSqlConfigurationData.json"
+
 
     fs.readFile(azureSqlConfigurationDataPath, function (err, azureSqlConfigDataBuffer) {
 
